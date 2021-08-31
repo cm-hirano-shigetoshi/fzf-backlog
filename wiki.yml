@@ -1,0 +1,27 @@
+base_task:
+  variables:
+    backlog_bin: '{{arg1}}'
+    command: 'wikis'
+    refresh_all: ''
+  source: '{{backlog_bin}} {{command}} {{refresh_all}} 2>/dev/null | {{yml_dir}}/bin/one_line_wiki.py'
+  delimiter: ':'
+  binds:
+    alt-o:
+      - 'execute-silent[open $({{backlog_bin}} wiki-urls {+1,2})]'
+    alt-r:
+      - 'execute[{{backlog_bin}} delete-cache-wiki-content {1,2}]'
+      - 'refresh-preview'
+  preview:
+    command: '{{backlog_bin}} wiki-content {1,2} | jq -r ".content | .content" | ccat --bg=dark --color=always'
+    window: 'up'
+  options:
+    - with-nth=1,3..
+    - reverse
+    - multi
+task_switch:
+  f5:
+    variables:
+      refresh_all: '--refresh-all'
+  alt-a:
+    variables:
+      command: 'wikis-across-projects'

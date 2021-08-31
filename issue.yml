@@ -1,0 +1,29 @@
+base_task:
+  variables:
+    backlog_bin: '{{arg1}}'
+    command: 'issues'
+    refresh_all: ''
+  source: '{{backlog_bin}} {{command}} {{refresh_all}} 2>/dev/null | {{yml_dir}}/bin/one_line_issue.py'
+  delimiter: ':'
+  binds:
+    alt-o:
+      - 'execute-silent[open $({{backlog_bin}} issue-urls {+1,2})]'
+  options:
+    - with-nth=2..
+    - ansi
+    - reverse
+    - multi
+    - 'query=!:完了: '
+  post_operations:
+    enter:
+      - pipe: awk -F ':' '{print $2,$5}' | tee >(pbcopy)
+    alt-enter:
+      - pipe: awk -F ':' '{print $2}' | tee >(pbcopy)
+task_switch:
+  f5:
+    variables:
+      refresh_all: '--refresh-all'
+  alt-a:
+    variables:
+      command: 'issues-across-projects'
+
