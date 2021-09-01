@@ -25,7 +25,7 @@ base_task:
     - no-sort
   post_operations:
     enter:
-      - pipe: awk -F ':' '{print $2,$5}' | tee >(pbcopy)
+      - pipe: fzfyml4 nth-tool -d ":" "2,5.." | sed 's/:/ /' | tee >(pbcopy)
     alt-enter:
       - pipe: awk -F ':' '{print $2}' | tee >(pbcopy)
 task_switch:
