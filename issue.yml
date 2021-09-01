@@ -8,6 +8,14 @@ base_task:
   binds:
     alt-o:
       - 'execute-silent[open $({{backlog_bin}} issue-urls {+1,2})]'
+    ctrl-alt-h:
+      - 'execute[{{backlog_bin}} update-issue-status MITAIOU {+1,2}]'
+    ctrl-alt-j:
+      - 'execute[{{backlog_bin}} update-issue-status TAIOUCHUU {+1,2}]'
+    ctrl-alt-k:
+      - 'execute[{{backlog_bin}} update-issue-status SYORIZUMI {+1,2}]'
+    ctrl-alt-l:
+      - 'execute[{{backlog_bin}} update-issue-status KANRYOU {+1,2}]'
   options:
     - with-nth=2..
     - ansi

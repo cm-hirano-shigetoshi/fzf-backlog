@@ -88,11 +88,19 @@ func printWiki(profile string, wikiId string, backlogBaseUrl string, projectId s
 	_ = json.NewEncoder(os.Stdout).Encode(jsonObj)
 }
 
-func deleteCacheWikiContent(profile string, wikiId string, backlogBaseUrl string, projectId string, apiKey string, cacheDir string, refreshAll bool) {
+func deleteWikiContentCache(profile string, wikiId string, backlogBaseUrl string, projectId string, apiKey string, cacheDir string, refreshAll bool) {
 	cachePath := cacheDir + "/" + projectId + "/wiki-contents/" + wikiId
 	fmt.Println("Remove " + cachePath)
 	if err := os.Remove(cachePath); err != nil {
 		fmt.Println(err)
+	}
+}
+
+func updateIssueStatus(profile string, issueId string, backlogBaseUrl string, projectId string, apiKey string, cacheDir string, refreshAll bool, targetStatus string) {
+	backlog.SetEnv(backlogBaseUrl, projectId, apiKey, cacheDir)
+	err := backlog.UpdateIssueStatus(issueId, targetStatus)
+	if err != nil {
+		log.Fatal("ステータスの更新に失敗しました")
 	}
 }
 
@@ -245,7 +253,7 @@ func main() {
 			urls = append(urls, "https://"+backlogBaseUrl+"/alias/wiki/"+id)
 		}
 		fmt.Println(strings.Join(urls, " "))
-	} else if flag.Args()[0] == "delete-cache-wiki-content" {
+	} else if flag.Args()[0] == "delte-wiki-content-cache" {
 		sp := strings.Split(flag.Args()[1], ":")
 		profile := sp[0]
 		wikiId := sp[1]
@@ -253,6 +261,18 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		deleteCacheWikiContent(profile, wikiId, backlogBaseUrl, projectId, apiKey, cacheDir, *refreshAllPtrPtr)
+		deleteWikiContentCache(profile, wikiId, backlogBaseUrl, projectId, apiKey, cacheDir, *refreshAllPtrPtr)
+	} else if flag.Args()[0] == "update-issue-status" {
+		targetStatus := flag.Args()[1]
+		for _, issue := range flag.Args()[2:] {
+			sp := strings.Split(issue, ":")
+			profile := sp[0]
+			issueId := sp[1]
+			backlogBaseUrl, projectId, apiKey, err := getBacklogProfile(profile, os.Getenv("HOME")+"/.backlog/profiles")
+			if err != nil {
+				log.Fatal(err)
+			}
+			updateIssueStatus(profile, issueId, backlogBaseUrl, projectId, apiKey, cacheDir, *refreshAllPtrPtr, targetStatus)
+		}
 	}
 }

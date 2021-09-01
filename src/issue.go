@@ -57,3 +57,20 @@ func GetAllIssues(refreshAll bool) ([]interface{}, error) {
 	_ = json.NewDecoder(file).Decode(&issues)
 	return issues.([]interface{}), nil
 }
+
+func UpdateIssueStatus(issueId string, targetStatus string) error {
+	targetStatusId := map[string]string{
+		"MITAIOU":   "1",
+		"TAIOUCHUU": "2",
+		"SYORIZUMI": "3",
+		"KANRYOU":   "4&resolutionId=0",
+	}[targetStatus]
+	url := "https://" + BACKLOG_BASE_URL + "/api/v2/issues/" + issueId + "?statusId=" + targetStatusId + "&apiKey=" + API_KEY
+	req, _ := http.NewRequest(http.MethodPatch, url, nil)
+	client := &http.Client{}
+	_, err := client.Do(req)
+	if err != nil {
+		return fmt.Errorf("ステータスの更新に失敗しました")
+	}
+	return nil
+}
