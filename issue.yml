@@ -14,6 +14,7 @@ base_task:
     - reverse
     - multi
     - 'query=!:完了: '
+    - no-sort
   post_operations:
     enter:
       - pipe: awk -F ':' '{print $2,$5}' | tee >(pbcopy)
