@@ -21,8 +21,12 @@ func SetEnv(backlogBaseUrl string, projectId string, apiKey string, cacheDir str
 	CACHE_DIR = cacheDir
 }
 
+func GetIssuesCache() string {
+	return CACHE_DIR + "/" + PROJECT_ID + "/issue"
+}
+
 func GetAllIssues(refreshAll bool) ([]interface{}, error) {
-	cachePath := CACHE_DIR + "/" + PROJECT_ID + "/issue"
+	cachePath := GetIssuesCache()
 	os.MkdirAll(filepath.Dir(cachePath), 0755)
 	if _, err := os.Stat(cachePath); err != nil || refreshAll {
 		var allIssues []interface{}

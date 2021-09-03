@@ -89,7 +89,8 @@ func printWiki(profile string, wikiId string, backlogBaseUrl string, projectId s
 }
 
 func deleteIssuesCache(profile string, backlogBaseUrl string, projectId string, apiKey string, cacheDir string, refreshAll bool) {
-	cachePath := cacheDir + "/" + projectId + "/issue"
+	backlog.SetEnv(backlogBaseUrl, projectId, apiKey, cacheDir)
+	cachePath := backlog.GetIssuesCache()
 	fmt.Println("Remove " + cachePath)
 	if err := os.Remove(cachePath); err != nil {
 		fmt.Println(err)
@@ -97,7 +98,8 @@ func deleteIssuesCache(profile string, backlogBaseUrl string, projectId string, 
 }
 
 func deleteWikiContentCache(profile string, wikiId string, backlogBaseUrl string, projectId string, apiKey string, cacheDir string, refreshAll bool) {
-	cachePath := cacheDir + "/" + projectId + "/wiki-contents/" + wikiId
+	backlog.SetEnv(backlogBaseUrl, projectId, apiKey, cacheDir)
+	cachePath := backlog.GetWikisCache()
 	fmt.Println("Remove " + cachePath)
 	if err := os.Remove(cachePath); err != nil {
 		fmt.Println(err)
