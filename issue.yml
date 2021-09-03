@@ -7,6 +7,8 @@ base_task:
   source: '{{source_command}}'
   delimiter: ':'
   binds:
+    alt-u:
+      - 'execute-silent[{{backlog_bin}} issue-urls {+1,2} | tr " " "\n" | pbcopy]'
     alt-o:
       - 'execute-silent[open $({{backlog_bin}} issue-urls {+1,2})]'
     alt-r:
