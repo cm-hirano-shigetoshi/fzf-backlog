@@ -88,6 +88,14 @@ func printWiki(profile string, wikiId string, backlogBaseUrl string, projectId s
 	_ = json.NewEncoder(os.Stdout).Encode(jsonObj)
 }
 
+func deleteIssuesCache(profile string, backlogBaseUrl string, projectId string, apiKey string, cacheDir string, refreshAll bool) {
+	cachePath := cacheDir + "/" + projectId + "/issue"
+	fmt.Println("Remove " + cachePath)
+	if err := os.Remove(cachePath); err != nil {
+		fmt.Println(err)
+	}
+}
+
 func deleteWikiContentCache(profile string, wikiId string, backlogBaseUrl string, projectId string, apiKey string, cacheDir string, refreshAll bool) {
 	cachePath := cacheDir + "/" + projectId + "/wiki-contents/" + wikiId
 	fmt.Println("Remove " + cachePath)
@@ -253,7 +261,19 @@ func main() {
 			urls = append(urls, "https://"+backlogBaseUrl+"/alias/wiki/"+id)
 		}
 		fmt.Println(strings.Join(urls, " "))
-	} else if flag.Args()[0] == "delte-wiki-content-cache" {
+	} else if flag.Args()[0] == "delete-issues-cache" {
+		profileSet := map[string]bool{}
+		for _, profile := range strings.Split(flag.Args()[1], " ") {
+			profileSet[profile] = true
+		}
+		for profile, _ := range profileSet {
+			backlogBaseUrl, projectId, apiKey, err := getBacklogProfile(profile, os.Getenv("HOME")+"/.backlog/profiles")
+			if err != nil {
+				log.Fatal(err)
+			}
+			deleteIssuesCache(profile, backlogBaseUrl, projectId, apiKey, cacheDir, *refreshAllPtrPtr)
+		}
+	} else if flag.Args()[0] == "delete-wiki-content-cache" {
 		sp := strings.Split(flag.Args()[1], ":")
 		profile := sp[0]
 		wikiId := sp[1]

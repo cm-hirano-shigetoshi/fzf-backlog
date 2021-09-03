@@ -3,19 +3,31 @@ base_task:
     backlog_bin: '{{arg1}}'
     command: 'issues'
     refresh_all: ''
-  source: '{{backlog_bin}} {{command}} {{refresh_all}} 2>/dev/null | {{yml_dir}}/bin/one_line_issue.py'
+    source_command: '{{backlog_bin}} {{command}} {{refresh_all}} 2>/dev/null | {{yml_dir}}/bin/one_line_issue.py'
+  source: '{{source_command}}'
   delimiter: ':'
   binds:
     alt-o:
       - 'execute-silent[open $({{backlog_bin}} issue-urls {+1,2})]'
+    alt-r:
+      - 'execute-silent[{{backlog_bin}} delete-issues-cache {+1}]'
+      - 'reload[{{source_command}}]'
     ctrl-alt-h:
-      - 'execute[{{backlog_bin}} update-issue-status MITAIOU {+1,2}]'
+      - 'execute-silent[{{backlog_bin}} update-issue-status MITAIOU {+1,2}]'
+      - 'execute-silent[{{backlog_bin}} delete-issues-cache {+1}]'
+      - 'reload[{{source_command}}]'
     ctrl-alt-j:
-      - 'execute[{{backlog_bin}} update-issue-status TAIOUCHUU {+1,2}]'
+      - 'execute-silent[{{backlog_bin}} update-issue-status TAIOUCHUU {+1,2}]'
+      - 'execute-silent[{{backlog_bin}} delete-issues-cache {+1}]'
+      - 'reload[{{source_command}}]'
     ctrl-alt-k:
-      - 'execute[{{backlog_bin}} update-issue-status SYORIZUMI {+1,2}]'
+      - 'execute-silent[{{backlog_bin}} update-issue-status SYORIZUMI {+1,2}]'
+      - 'execute-silent[{{backlog_bin}} delete-issues-cache {+1}]'
+      - 'reload[{{source_command}}]'
     ctrl-alt-l:
-      - 'execute[{{backlog_bin}} update-issue-status KANRYOU {+1,2}]'
+      - 'execute-silent[{{backlog_bin}} update-issue-status KANRYOU {+1,2}]'
+      - 'execute-silent[{{backlog_bin}} delete-issues-cache {+1}]'
+      - 'reload[{{source_command}}]'
   options:
     - with-nth=2..
     - ansi
@@ -29,9 +41,6 @@ base_task:
     alt-enter:
       - pipe: awk -F ':' '{print $2}' | tee >(pbcopy)
 task_switch:
-  f5:
-    variables:
-      refresh_all: '--refresh-all'
   alt-a:
     variables:
       command: 'issues-across-projects'
