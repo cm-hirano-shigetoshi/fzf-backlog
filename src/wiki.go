@@ -9,8 +9,12 @@ import (
 	"path/filepath"
 )
 
+func GetWikisCache() string {
+	return CACHE_DIR + "/" + PROJECT_ID + "/wiki"
+}
+
 func GetAllWikis(refreshAll bool) ([]interface{}, error) {
-	cachePath := CACHE_DIR + "/" + PROJECT_ID + "/wiki"
+	cachePath := GetWikisCache()
 	os.MkdirAll(filepath.Dir(cachePath), 0755)
 	if _, err := os.Stat(cachePath); err != nil || refreshAll {
 		url := "https://" + BACKLOG_BASE_URL + "/api/v2/wikis?projectIdOrKey=" + PROJECT_ID + "&apiKey=" + API_KEY
