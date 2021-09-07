@@ -7,6 +7,10 @@ base_task:
   source: '{{source_command}}'
   delimiter: ':'
   binds:
+    alt-c:
+      - 'execute-silent[for l in {+2,5..}; do echo "$l"; done | sed "s/:/ /" | pbcopy]'
+    ctrl-alt-c:
+      - 'execute-silent[for l in {+2}; do echo "$l"; done | sed "s/:/ /" | pbcopy]'
     alt-u:
       - 'execute-silent[{{backlog_bin}} issue-urls {+1,2} | tr " " "\n" | pbcopy]'
     alt-o:
@@ -39,9 +43,9 @@ base_task:
     - no-sort
   post_operations:
     enter:
-      - pipe: fzfyml4 nth-tool -d ":" "2,5.." | sed 's/:/ /' | tee >(pbcopy)
+      - pipe: fzfyml4 nth-tool -d ":" "2,5.." | sed 's/:/ /'
     alt-enter:
-      - pipe: awk -F ':' '{print $2}' | tee >(pbcopy)
+      - pipe: awk -F ':' '{print $2}'
 task_switch:
   alt-a:
     variables:
