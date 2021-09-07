@@ -3,7 +3,7 @@ base_task:
     backlog_bin: '{{arg1}}'
     command: 'issues'
     refresh_all: ''
-    source_command: '{{backlog_bin}} {{command}} {{refresh_all}} 2>/dev/null | {{yml_dir}}/bin/one_line_issue.py'
+    source_command: '{{backlog_bin}} {{command}} {{refresh_all}} 2>/dev/null | {{yml_dir}}/../one_line_issue.py'
   source: '{{source_command}}'
   delimiter: ':'
   binds:
