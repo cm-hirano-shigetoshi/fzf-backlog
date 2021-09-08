@@ -1,12 +1,14 @@
 base_task:
   variables:
     backlog_bin: '{{arg1}}'
-    command: 'issues'
-    refresh_all: ''
-    source_command: '{{backlog_bin}} {{command}} {{refresh_all}} 2>/dev/null | {{yml_dir}}/../one_line_issue.py'
+    source_command: '{{backlog_bin}} issue-list 2>/dev/null'
   source: '{{source_command}}'
   delimiter: ':'
   binds:
+    alt-p:
+      - 'preview[{{backlog_bin}} issue-description-and-comments {1,2} | ccat --color=always --bg=black]'
+    alt-a:
+      - 'reload[{{source_command}} --profile-all]'
     alt-c:
       - 'execute-silent[for l in {+2,5..}; do echo "$l"; done | sed "s/:/ /" | pbcopy]'
     ctrl-alt-c:
@@ -16,24 +18,27 @@ base_task:
     alt-o:
       - 'execute-silent[open $({{backlog_bin}} issue-urls {+1,2})]'
     alt-r:
-      - 'execute-silent[{{backlog_bin}} delete-issues-cache {+1}]'
+      - 'execute-silent[{{backlog_bin}} delete-issue-cache {+1}]'
       - 'reload[{{source_command}}]'
     ctrl-alt-h:
       - 'execute-silent[{{backlog_bin}} update-issue-status MITAIOU {+1,2}]'
-      - 'execute-silent[{{backlog_bin}} delete-issues-cache {+1}]'
+      - 'execute-silent[{{backlog_bin}} delete-issue-cache {+1}]'
       - 'reload[{{source_command}}]'
     ctrl-alt-j:
       - 'execute-silent[{{backlog_bin}} update-issue-status TAIOUCHUU {+1,2}]'
-      - 'execute-silent[{{backlog_bin}} delete-issues-cache {+1}]'
+      - 'execute-silent[{{backlog_bin}} delete-issue-cache {+1}]'
       - 'reload[{{source_command}}]'
     ctrl-alt-k:
       - 'execute-silent[{{backlog_bin}} update-issue-status SYORIZUMI {+1,2}]'
-      - 'execute-silent[{{backlog_bin}} delete-issues-cache {+1}]'
+      - 'execute-silent[{{backlog_bin}} delete-issue-cache {+1}]'
       - 'reload[{{source_command}}]'
     ctrl-alt-l:
       - 'execute-silent[{{backlog_bin}} update-issue-status KANRYOU {+1,2}]'
-      - 'execute-silent[{{backlog_bin}} delete-issues-cache {+1}]'
+      - 'execute-silent[{{backlog_bin}} delete-issue-cache {+1}]'
       - 'reload[{{source_command}}]'
+  preview:
+    command: '{{backlog_bin}} issue-description {1,2} | ccat --color=always --bg=black'
+    window: 'down:wrap'
   options:
     - with-nth=2..
     - ansi
@@ -46,8 +51,3 @@ base_task:
       - pipe: fzfyml4 nth-tool -d ":" "2,5.." | sed 's/:/ /'
     alt-enter:
       - pipe: awk -F ':' '{print $2}'
-task_switch:
-  alt-a:
-    variables:
-      command: 'issues-across-projects'
-
