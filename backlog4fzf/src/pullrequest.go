@@ -1,4 +1,4 @@
-package backlog
+package backlog4fzf
 
 import (
 	"encoding/json"
@@ -30,7 +30,7 @@ func getRepositories() (map[string]string, error) {
 	return repos, nil
 }
 
-func GetAllPullrequests(refreshAll bool) ([]interface{}, error) {
+func getAllPullrequests(refreshAll bool) ([]interface{}, error) {
 	cachePath := CACHE_DIR + "/" + PROJECT_ID + "/pullrequest"
 	os.MkdirAll(filepath.Dir(cachePath), 0755)
 	if _, err := os.Stat(cachePath); err != nil || refreshAll {
