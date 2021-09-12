@@ -16,6 +16,7 @@ var (
 
 func Run() int {
 	cmdIssueList := app.Command("issue-list", "issue-list")
+	cmdIssueListWithDescription := cmdIssueList.Flag("desc", "description").Bool()
 
 	cmdIssueUrls := app.Command("issue-urls", "issue-urls")
 	cmdIssueUrlArgs := cmdIssueUrls.Arg("profile-issues", "profile-issues").Strings()
@@ -38,7 +39,7 @@ func Run() int {
 
 	switch kingpin.MustParse(app.Parse(os.Args[1:])) {
 	case cmdIssueList.FullCommand():
-		exit, err := printIssueList()
+		exit, err := printIssueList(*cmdIssueListWithDescription)
 		if err != nil {
 			fmt.Println(err)
 		}

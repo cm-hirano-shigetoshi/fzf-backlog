@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-func printIssueList() (int, error) {
+func printIssueList(withDesc bool) (int, error) {
 	for _, profile := range strings.Split(getProfiles(), ",") {
 		backlogProfile, err := getBacklogProfile(profile, *appProfileConfig)
 		if err != nil {
@@ -24,7 +24,7 @@ func printIssueList() (int, error) {
 			"issues":  issues,
 		}
 		for _, issue := range issuesWithProfile["issues"].([]interface{}) {
-			fmt.Println(toOneLineIssue(profile, issue.(map[string]interface{})))
+			fmt.Println(toOneLineIssue(profile, issue.(map[string]interface{}), withDesc))
 		}
 	}
 	return 0, nil
@@ -134,7 +134,7 @@ func colorIssueStatus(status string) string {
 	return status
 }
 
-func toOneLineIssue(profile string, issue map[string]interface{}) string {
+func toOneLineIssue(profile string, issue map[string]interface{}, withDesc bool) string {
 	elem := []string{}
 	elem = append(elem, profile)
 	elem = append(elem, issue["issueKey"].(string))
@@ -145,6 +145,15 @@ func toOneLineIssue(profile string, issue map[string]interface{}) string {
 		elem = append(elem, "")
 	}
 	elem = append(elem, issue["summary"].(string))
+	if withDesc {
+		space := ""
+		for i := 0; i <= 100; i++ {
+			space += "          "
+		}
+		elem[len(elem)-1] += space + "\\n"
+		desc := issue["description"].(string)
+		elem = append(elem, strings.Replace(desc, "\n", "\\n", -1))
+	}
 	return strings.Join(elem, ":")
 }
 
