@@ -19,11 +19,7 @@ func printIssueList(withDesc bool) (int, error) {
 		if err != nil {
 			return 1, err
 		}
-		issuesWithProfile := map[string]interface{}{
-			"profile": profile,
-			"issues":  issues,
-		}
-		for _, issue := range issuesWithProfile["issues"].([]interface{}) {
+		for _, issue := range issues {
 			fmt.Println(toOneLineIssue(profile, issue.(map[string]interface{}), withDesc))
 		}
 	}
@@ -210,35 +206,3 @@ func getIssueListCache(profile BacklogProfile, cacheDir string) string {
 func getIssueCommentsCache(profile BacklogProfile, cacheDir string, issueId string) string {
 	return cacheDir + "/" + profile.projectId + "/issue-comments/" + issueId
 }
-
-/*
-func printIssues(profile string, backlogBaseUrl string, projectId string, apiKey string, cacheDir string, refreshAll bool) {
-	setEnv(backlogBaseUrl, projectId, apiKey, cacheDir)
-	allIssues, err := getAllIssues(refreshAll)
-	if err != nil {
-		log.Fatal(err)
-	}
-	jsonObj := map[string]interface{}{}
-	jsonObj["profile"] = profile
-	jsonObj["issues"] = allIssues
-	_ = json.NewEncoder(os.Stdout).Encode(jsonObj)
-}
-
-func updateIssueStatus(profile string, issueId string, backlogBaseUrl string, projectId string, apiKey string, cacheDir string, refreshAll bool, targetStatus string) error {
-	setEnv(backlogBaseUrl, projectId, apiKey, cacheDir)
-	targetStatusId := map[string]string{
-		"MITAIOU":   "1",
-		"TAIOUCHUU": "2",
-		"SYORIZUMI": "3",
-		"KANRYOU":   "4&resolutionId=0",
-	}[targetStatus]
-	url := "https://" + BACKLOG_BASE_URL + "/api/v2/issues/" + issueId + "?statusId=" + targetStatusId + "&apiKey=" + API_KEY
-	req, _ := http.NewRequest(http.MethodPatch, url, nil)
-	client := &http.Client{}
-	_, err := client.Do(req)
-	if err != nil {
-		return fmt.Errorf("ステータスの更新に失敗しました")
-	}
-	return nil
-}
-*/

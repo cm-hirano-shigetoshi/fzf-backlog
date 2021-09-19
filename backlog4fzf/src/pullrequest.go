@@ -3,79 +3,111 @@ package backlog4fzf
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
-	"net/http"
 	"os"
 	"path/filepath"
-	"strconv"
+	"strings"
 )
 
-func getRepositories() (map[string]string, error) {
-	url := "https://" + BACKLOG_BASE_URL + "/api/v2/projects/" + PROJECT_ID + "/git/repositories?apiKey=" + API_KEY
-	response, err := http.Get(url)
-	if err != nil {
-		return nil, fmt.Errorf("URLが正しくありません")
+func printPullrequestList(withDesc bool) (int, error) {
+	for _, profile := range strings.Split(getProfiles(), ",") {
+		backlogProfile, err := getBacklogProfile(profile, *appProfileConfig)
+		if err != nil {
+			return 1, err
+		}
+		cachePath := getPullrequestListCache(backlogProfile, *appCacheDir)
+		var pullrequests []interface{}
+		pullrequests, err = getAllPullrequests(backlogProfile, cachePath)
+		if err != nil {
+			return 1, err
+		}
+		for _, pullrequest := range pullrequests {
+			oneLine := toOneLinePullrequest(profile, pullrequest.(map[string]interface{}), withDesc)
+			if len(oneLine) > 0 {
+				fmt.Println(oneLine)
+			}
+		}
 	}
-	byteArray, _ := ioutil.ReadAll(response.Body)
-	var repositories interface{}
-	err = json.Unmarshal(byteArray, &repositories)
-	if err != nil {
-		return nil, fmt.Errorf("想定外のJSON形式です")
-	}
-	repos := map[string]string{}
-	for _, repo := range repositories.([]interface{}) {
-		r := repo.(map[string]interface{})
-		repos[strconv.Itoa(int(r["id"].(float64)))] = r["name"].(string)
-	}
-	return repos, nil
+	return 0, nil
 }
 
-func getAllPullrequests(refreshAll bool) ([]interface{}, error) {
-	cachePath := CACHE_DIR + "/" + PROJECT_ID + "/pullrequest"
-	os.MkdirAll(filepath.Dir(cachePath), 0755)
-	if _, err := os.Stat(cachePath); err != nil || refreshAll {
-		var allPullrequests []interface{}
-		repositories, _ := getRepositories()
-		for repoId, repoName := range repositories {
-			var repoPullrequests []interface{}
-			offset := 0
-			for {
-				url := "https://" + BACKLOG_BASE_URL + "/api/v2/projects/" + PROJECT_ID + "/git/repositories/" + repoId + "/pullRequests?&count=100&offset=" + strconv.Itoa(offset) + "&apiKey=" + API_KEY
-				response, err := http.Get(url)
-				if err != nil {
-					return nil, fmt.Errorf("URLが正しくありません")
-				}
-				byteArray, _ := ioutil.ReadAll(response.Body)
-				var pullrequest interface{}
-				err = json.Unmarshal(byteArray, &pullrequest)
-				if err != nil {
-					return nil, fmt.Errorf("想定外のJSON形式です")
-				}
-				partPullrequests := pullrequest.([]interface{})
-				if len(partPullrequests) > 0 {
-					repoPullrequests = append(repoPullrequests, partPullrequests...)
-					offset += len(partPullrequests)
-				} else {
-					break
-				}
-			}
-			jsonObj := map[string]interface{}{}
-			jsonObj["repositoryId"] = repoId
-			jsonObj["repositoryName"] = repoName
-			jsonObj["pullRequests"] = repoPullrequests
-			allPullrequests = append(allPullrequests, jsonObj)
+func deletePullrequestCache(profiles []string) (int, error) {
+	uniq := map[string]bool{}
+	for _, profile := range profiles {
+		uniq[profile] = true
+	}
+	for profile, _ := range uniq {
+		backlogProfile, err := getBacklogProfile(profile, *appProfileConfig)
+		cachePath := getPullrequestListCache(backlogProfile, *appCacheDir)
+		if err != nil {
+			return 1, err
 		}
+		os.Remove(cachePath)
+	}
+	return 0, nil
+}
+
+func getAllPullrequests(profile BacklogProfile, cachePath string) ([]interface{}, error) {
+	os.MkdirAll(filepath.Dir(cachePath), 0755)
+	if _, err := os.Stat(cachePath); err != nil {
+		var pullrequests []map[string]interface{}
+		pullrequests, _ = getAllPullrequestsSDK(profile)
 		file, _ := os.Create(cachePath)
 		defer file.Close()
-		_ = json.NewEncoder(file).Encode(allPullrequests)
+		_ = json.NewEncoder(file).Encode(pullrequests)
 	}
 	file, _ := os.Open(cachePath)
 	defer file.Close()
-	var pullrequests interface{}
+	var pullrequests []interface{}
 	_ = json.NewDecoder(file).Decode(&pullrequests)
-	if pullrequests == nil {
-		return nil, nil
-	} else {
-		return pullrequests.([]interface{}), nil
+	return pullrequests, nil
+}
+
+func getPullrequestListCache(profile BacklogProfile, cacheDir string) string {
+	return cacheDir + "/" + profile.projectId + "/pullrequest-list"
+}
+
+func colorPullrequestStatus(status string) string {
+	if status == "Open" {
+		return "\033[31m" + status + "\033[0m"
+	} else if status == "Merged" {
+		return "\033[32m" + status + "\033[0m"
+	} else if status == "Closed" {
+		return "\033[90m" + status + "\033[0m"
 	}
+	return status
+}
+
+func toOneLinePullrequest(profile string, pullrequest map[string]interface{}, withDesc bool) string {
+	if x, ok := pullrequest["pullRequests"]; !ok || x == nil {
+		return ""
+	}
+	lines := []string{}
+	repositoryName := pullrequest["repositoryName"].(string)
+	for _, p := range pullrequest["pullRequests"].([]interface{}) {
+		pullreq := p.(map[string]interface{})
+		elem := []string{}
+		elem = append(elem, profile)
+		elem = append(elem, repositoryName)
+		number := pullreq["number"]
+		elem = append(elem, "#"+fmt.Sprintf("%v", number))
+		elem = append(elem, colorPullrequestStatus(pullreq["status"].(map[string]interface{})["name"].(string)))
+		if assignee := pullreq["assignee"]; assignee != nil {
+			elem = append(elem, assignee.(map[string]interface{})["name"].(string))
+		} else {
+			elem = append(elem, "")
+		}
+		elem = append(elem, pullreq["summary"].(string))
+		if withDesc {
+			space := ""
+			for i := 0; i <= 100; i++ {
+				space += "          "
+			}
+			elem[len(elem)-1] += space + "\\n"
+			desc := pullreq["description"].(string)
+			elem = append(elem, strings.Replace(desc, "\n", "\\n", -1))
+		}
+		line := strings.Join(elem, ":")
+		lines = append(lines, line)
+	}
+	return strings.Join(lines, "\n")
 }

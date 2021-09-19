@@ -1,8 +1,11 @@
 package backlog4fzf
 
 import (
-	//"fmt"
+	"encoding/json"
+	"fmt"
 	backlog "github.com/kenzo0107/backlog"
+	"io/ioutil"
+	"net/http"
 	"strconv"
 )
 
@@ -68,4 +71,68 @@ func getIssueCommentsSDK(profile BacklogProfile, issueId string) ([]interface{},
 	}
 	allComments = append(allComments, bbb...)
 	return allComments, nil
+}
+
+func getRepositories(profile BacklogProfile) (map[string]string, error) {
+	url := "https://" + profile.baseUrl + "/api/v2/projects/" + profile.projectId + "/git/repositories?apiKey=" + profile.apiKey
+	response, err := http.Get(url)
+	if err != nil {
+		return nil, fmt.Errorf("URLが正しくありません")
+	}
+	byteArray, _ := ioutil.ReadAll(response.Body)
+	var repositories interface{}
+	err = json.Unmarshal(byteArray, &repositories)
+	if err != nil {
+		return nil, fmt.Errorf("想定外のJSON形式です")
+	}
+	repos := map[string]string{}
+	for _, repo := range repositories.([]interface{}) {
+		r := repo.(map[string]interface{})
+		repos[strconv.Itoa(int(r["id"].(float64)))] = r["name"].(string)
+	}
+	return repos, nil
+}
+
+func getAllPullrequestsOfRepository(profile BacklogProfile, repoId string) ([]interface{}, error) {
+	var pullrequests []interface{}
+	offset := 0
+	for {
+		url := "https://" + profile.baseUrl + "/api/v2/projects/" + profile.projectId + "/git/repositories/" + repoId + "/pullRequests?&count=100&offset=" + strconv.Itoa(offset) + "&apiKey=" + profile.apiKey
+		response, err := http.Get(url)
+		if err != nil {
+			return nil, fmt.Errorf("URLが正しくありません")
+		}
+		byteArray, _ := ioutil.ReadAll(response.Body)
+		var pullrequest interface{}
+		err = json.Unmarshal(byteArray, &pullrequest)
+		if err != nil {
+			return nil, fmt.Errorf("想定外のJSON形式です")
+		}
+		partPullrequests := pullrequest.([]interface{})
+		if len(partPullrequests) > 0 {
+			pullrequests = append(pullrequests, partPullrequests...)
+			offset += len(partPullrequests)
+		} else {
+			break
+		}
+	}
+	return pullrequests, nil
+}
+
+func getAllPullrequestsSDK(profile BacklogProfile) ([]map[string]interface{}, error) {
+	allPullrequests := []map[string]interface{}{}
+	repositories, _ := getRepositories(profile)
+	for repoId, repoName := range repositories {
+		var pullrequests []interface{}
+		pullrequests, err := getAllPullrequestsOfRepository(profile, repoId)
+		if err != nil {
+			return nil, err
+		}
+		jsonObj := map[string]interface{}{}
+		jsonObj["repositoryId"] = repoId
+		jsonObj["repositoryName"] = repoName
+		jsonObj["pullRequests"] = pullrequests
+		allPullrequests = append(allPullrequests, jsonObj)
+	}
+	return allPullrequests, nil
 }

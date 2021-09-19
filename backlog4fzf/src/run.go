@@ -37,6 +37,12 @@ func Run() int {
 	cmdIssueDescriptionAndComments := app.Command("issue-description-and-comments", "issue-description-and-comments")
 	cmdIssueDescriptionAndCommentsIssue := cmdIssueDescriptionAndComments.Arg("profile-issue", "profile-issue").String()
 
+	cmdPullrequestList := app.Command("pullrequest-list", "pullrequest-list")
+	cmdPullrequestListWithDescription := cmdPullrequestList.Flag("desc", "description").Bool()
+
+	cmdDeletePullrequestCache := app.Command("delete-pullrequest-cache", "delete-pullrequest-cache")
+	cmdDeletePullrequestCacheProfiles := cmdDeletePullrequestCache.Arg("profile-pullrequests", "profile-pullrequests").Strings()
+
 	switch kingpin.MustParse(app.Parse(os.Args[1:])) {
 	case cmdIssueList.FullCommand():
 		exit, err := printIssueList(*cmdIssueListWithDescription)
@@ -76,6 +82,18 @@ func Run() int {
 		return exit
 	case cmdIssueDescriptionAndComments.FullCommand():
 		exit, err := printIssueDescriptionAndComments(*cmdIssueDescriptionAndCommentsIssue)
+		if err != nil {
+			fmt.Println(err)
+		}
+		return exit
+	case cmdPullrequestList.FullCommand():
+		exit, err := printPullrequestList(*cmdPullrequestListWithDescription)
+		if err != nil {
+			fmt.Println(err)
+		}
+		return exit
+	case cmdDeletePullrequestCache.FullCommand():
+		exit, err := deletePullrequestCache(*cmdDeletePullrequestCacheProfiles)
 		if err != nil {
 			fmt.Println(err)
 		}
