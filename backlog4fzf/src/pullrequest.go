@@ -60,6 +60,21 @@ func deletePullrequestCache(profiles []string) (int, error) {
 	return 0, nil
 }
 
+func printPullrequestDescription(profile_repository_pullrequest string) (int, error) {
+	sp := strings.Split(profile_repository_pullrequest, ":")
+	backlogProfile, err := getBacklogProfile(sp[0], *appProfileConfig)
+	if err != nil {
+		return 1, err
+	}
+	cachePath := getPullrequestListCache(backlogProfile, *appCacheDir)
+	desc, err := getPullrequestDescription(backlogProfile, sp[1], sp[2][1:], cachePath)
+	if err != nil {
+		return 1, err
+	}
+	fmt.Println(desc)
+	return 0, nil
+}
+
 func getAllPullrequests(profile BacklogProfile, cachePath string) ([]interface{}, error) {
 	os.MkdirAll(filepath.Dir(cachePath), 0755)
 	if _, err := os.Stat(cachePath); err != nil {
@@ -74,6 +89,23 @@ func getAllPullrequests(profile BacklogProfile, cachePath string) ([]interface{}
 	var pullrequests []interface{}
 	_ = json.NewDecoder(file).Decode(&pullrequests)
 	return pullrequests, nil
+}
+
+func getPullrequestDescription(profile BacklogProfile, repository string, number string, cachePath string) (string, error) {
+	pullrequests, err := getAllPullrequests(profile, cachePath)
+	if err != nil {
+		return "", err
+	}
+	for _, pullrequest := range pullrequests {
+		if pullrequest.(map[string]interface{})["repositoryName"].(string) == repository {
+			for _, pullreq := range pullrequest.(map[string]interface{})["pullRequests"].([]interface{}) {
+				if fmt.Sprintf("%v", pullreq.(map[string]interface{})["number"]) == number {
+					return pullreq.(map[string]interface{})["description"].(string), nil
+				}
+			}
+		}
+	}
+	return "", nil
 }
 
 func getPullrequestListCache(profile BacklogProfile, cacheDir string) string {

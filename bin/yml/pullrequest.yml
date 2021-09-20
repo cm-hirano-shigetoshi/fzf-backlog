@@ -18,6 +18,9 @@ base_task:
     alt-r:
       - 'execute-silent[{{backlog_bin}} delete-pullrequest-cache {+1}]'
       - 'reload[{{source_command}}]'
+  preview:
+    command: '{{backlog_bin}} pullrequest-description {1,2,3} | ccat --color=always --bg=black'
+    window: 'down:wrap'
   options:
     - with-nth=2..
     - ansi
