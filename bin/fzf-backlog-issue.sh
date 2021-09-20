@@ -2,4 +2,4 @@
 set -eu
 
 TOOL_DIR=$(dirname $(env - python3 -c "import os; print(os.path.realpath('$0'));"))
-fzfyml4 run $TOOL_DIR/../issue.yml $TOOL_DIR/backlog "$@"
+fzfyml4 run $TOOL_DIR/yml/issue.yml $TOOL_DIR/backlog4fzf "$@"

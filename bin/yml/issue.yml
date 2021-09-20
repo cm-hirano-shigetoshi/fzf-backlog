@@ -1,39 +1,46 @@
 base_task:
   variables:
     backlog_bin: '{{arg1}}'
-    command: 'issues'
-    refresh_all: ''
-    source_command: '{{backlog_bin}} {{command}} {{refresh_all}} 2>/dev/null | {{yml_dir}}/bin/one_line_issue.py'
+    source_command: '{{backlog_bin}} issue-list 2>/dev/null'
   source: '{{source_command}}'
   delimiter: ':'
   binds:
+    alt-p:
+      - 'preview[{{backlog_bin}} issue-description-and-comments {1,2} | ccat --color=always --bg=black]'
+    alt-s:
+      - 'reload[{{source_command}} --desc]'
+    alt-a:
+      - 'reload[{{source_command}} --profile-all]'
     alt-c:
-      - 'execute-silent[for l in {+2,5..}; do echo "$l"; done | sed "s/:/ /" | pbcopy]'
+      - 'execute-silent[for l in {+2,5..}; do env - echo "$l"; done | sed -e "s/:/ /" | sed -e "s/ \+\\\\n.*$//" | pbcopy]'
     ctrl-alt-c:
-      - 'execute-silent[for l in {+2}; do echo "$l"; done | sed "s/:/ /" | pbcopy]'
+      - 'execute-silent[for l in {+2}; do echo "$l"; done | pbcopy]'
     alt-u:
       - 'execute-silent[{{backlog_bin}} issue-urls {+1,2} | tr " " "\n" | pbcopy]'
     alt-o:
       - 'execute-silent[open $({{backlog_bin}} issue-urls {+1,2})]'
     alt-r:
-      - 'execute-silent[{{backlog_bin}} delete-issues-cache {+1}]'
+      - 'execute-silent[{{backlog_bin}} delete-issue-cache {+1}]'
       - 'reload[{{source_command}}]'
     ctrl-alt-h:
       - 'execute-silent[{{backlog_bin}} update-issue-status MITAIOU {+1,2}]'
-      - 'execute-silent[{{backlog_bin}} delete-issues-cache {+1}]'
+      - 'execute-silent[{{backlog_bin}} delete-issue-cache {+1}]'
       - 'reload[{{source_command}}]'
     ctrl-alt-j:
       - 'execute-silent[{{backlog_bin}} update-issue-status TAIOUCHUU {+1,2}]'
-      - 'execute-silent[{{backlog_bin}} delete-issues-cache {+1}]'
+      - 'execute-silent[{{backlog_bin}} delete-issue-cache {+1}]'
       - 'reload[{{source_command}}]'
     ctrl-alt-k:
       - 'execute-silent[{{backlog_bin}} update-issue-status SYORIZUMI {+1,2}]'
-      - 'execute-silent[{{backlog_bin}} delete-issues-cache {+1}]'
+      - 'execute-silent[{{backlog_bin}} delete-issue-cache {+1}]'
       - 'reload[{{source_command}}]'
     ctrl-alt-l:
       - 'execute-silent[{{backlog_bin}} update-issue-status KANRYOU {+1,2}]'
-      - 'execute-silent[{{backlog_bin}} delete-issues-cache {+1}]'
+      - 'execute-silent[{{backlog_bin}} delete-issue-cache {+1}]'
       - 'reload[{{source_command}}]'
+  preview:
+    command: '{{backlog_bin}} issue-description {1,2} | ccat --color=always --bg=black'
+    window: 'down:wrap'
   options:
     - with-nth=2..
     - ansi
@@ -41,13 +48,9 @@ base_task:
     - multi
     - 'query=!:完了: '
     - no-sort
+    - no-hscroll
   post_operations:
     enter:
-      - pipe: fzfyml4 nth-tool -d ":" "2,5.." | sed 's/:/ /'
+      - pipe: fzfyml4 nth-tool -d ":" "2,5.." | sed -e 's/:/ /' -e 's/ \+\\n.*$//'
     alt-enter:
       - pipe: awk -F ':' '{print $2}'
-task_switch:
-  alt-a:
-    variables:
-      command: 'issues-across-projects'
-

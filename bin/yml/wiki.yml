@@ -3,7 +3,7 @@ base_task:
     backlog_bin: '{{arg1}}'
     command: 'wikis'
     refresh_all: ''
-  source: '{{backlog_bin}} {{command}} {{refresh_all}} 2>/dev/null | {{yml_dir}}/bin/one_line_wiki.py'
+  source: '{{backlog_bin}} {{command}} {{refresh_all}} 2>/dev/null | {{yml_dir}}/../one_line_wiki.py'
   delimiter: ':'
   binds:
     alt-o:

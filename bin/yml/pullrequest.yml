@@ -1,0 +1,35 @@
+base_task:
+  variables:
+    backlog_bin: '{{arg1}}'
+    source_command: '{{backlog_bin}} pullrequest-list 2>/dev/null'
+  source: '{{source_command}}'
+  delimiter: ':'
+  binds:
+    alt-s:
+      - 'reload[{{source_command}} --desc]'
+    alt-a:
+      - 'reload[{{source_command}} --profile-all]'
+    alt-c:
+      - 'execute-silent[for l in {+3,6..}; do env - echo "$l"; done | sed -e "s/:/ /" | sed -e "s/ \+\\\\n.*$//" | pbcopy]'
+    alt-u:
+      - 'execute-silent[{{backlog_bin}} pullrequest-urls {+1,2,3} | tr " " "\n" | pbcopy]'
+    alt-o:
+      - 'execute-silent[open $({{backlog_bin}} pullrequest-urls {+1,2,3})]'
+    alt-r:
+      - 'execute-silent[{{backlog_bin}} delete-pullrequest-cache {+1}]'
+      - 'reload[{{source_command}}]'
+  preview:
+    command: '{{backlog_bin}} pullrequest-description {1,2,3} | ccat --color=always --bg=black'
+    window: 'down:wrap'
+  options:
+    - with-nth=2..
+    - ansi
+    - reverse
+    - tac
+    - multi
+    - 'query=!:Closed: !:Merged: '
+    - no-sort
+    - no-hscroll
+  post_operations:
+    enter:
+      - pipe: awk -F ':' '{print $3,$6}'

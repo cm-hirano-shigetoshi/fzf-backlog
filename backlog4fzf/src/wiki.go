@@ -1,4 +1,4 @@
-package backlog
+package backlog4fzf
 
 import (
 	"encoding/json"
@@ -9,12 +9,12 @@ import (
 	"path/filepath"
 )
 
-func GetWikisCache() string {
+func getWikisCache() string {
 	return CACHE_DIR + "/" + PROJECT_ID + "/wiki"
 }
 
-func GetAllWikis(refreshAll bool) ([]interface{}, error) {
-	cachePath := GetWikisCache()
+func getAllWikis(refreshAll bool) ([]interface{}, error) {
+	cachePath := getWikisCache()
 	os.MkdirAll(filepath.Dir(cachePath), 0755)
 	if _, err := os.Stat(cachePath); err != nil || refreshAll {
 		url := "https://" + BACKLOG_BASE_URL + "/api/v2/wikis?projectIdOrKey=" + PROJECT_ID + "&apiKey=" + API_KEY
@@ -40,7 +40,7 @@ func GetAllWikis(refreshAll bool) ([]interface{}, error) {
 	return wikis.([]interface{}), nil
 }
 
-func GetWikiContent(wikiId string, refreshAll bool) (map[string]interface{}, error) {
+func getWikiContent(wikiId string, refreshAll bool) (map[string]interface{}, error) {
 	cachePath := CACHE_DIR + "/" + PROJECT_ID + "/wiki-contents/" + wikiId
 	os.MkdirAll(filepath.Dir(cachePath), 0755)
 	if _, err := os.Stat(cachePath); err != nil || refreshAll {
