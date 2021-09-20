@@ -40,6 +40,9 @@ func Run() int {
 	cmdPullrequestList := app.Command("pullrequest-list", "pullrequest-list")
 	cmdPullrequestListWithDescription := cmdPullrequestList.Flag("desc", "description").Bool()
 
+	cmdPullrequestUrls := app.Command("pullrequest-urls", "pullrequest-urls")
+	cmdPullrequestUrlArgs := cmdPullrequestUrls.Arg("profile-repository-pullrequests", "profile-repository-pullrequests").Strings()
+
 	cmdDeletePullrequestCache := app.Command("delete-pullrequest-cache", "delete-pullrequest-cache")
 	cmdDeletePullrequestCacheProfiles := cmdDeletePullrequestCache.Arg("profile-pullrequests", "profile-pullrequests").Strings()
 
@@ -88,6 +91,12 @@ func Run() int {
 		return exit
 	case cmdPullrequestList.FullCommand():
 		exit, err := printPullrequestList(*cmdPullrequestListWithDescription)
+		if err != nil {
+			fmt.Println(err)
+		}
+		return exit
+	case cmdPullrequestUrls.FullCommand():
+		exit, err := printPullrequestUrls(*cmdPullrequestUrlArgs)
 		if err != nil {
 			fmt.Println(err)
 		}

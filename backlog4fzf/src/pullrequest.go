@@ -30,6 +30,20 @@ func printPullrequestList(withDesc bool) (int, error) {
 	return 0, nil
 }
 
+func printPullrequestUrls(profile_pullrequests []string) (int, error) {
+	urls := []string{}
+	for _, profile_pullrequest := range profile_pullrequests {
+		sp := strings.Split(profile_pullrequest, ":")
+		backlogProfile, err := getBacklogProfile(sp[0], *appProfileConfig)
+		if err != nil {
+			return 1, err
+		}
+		urls = append(urls, "https://"+backlogProfile.baseUrl+"/git/"+backlogProfile.projectId+"/"+sp[1]+"/pullRequests/"+sp[2][1:])
+	}
+	fmt.Println(strings.Join(urls, " "))
+	return 0, nil
+}
+
 func deletePullrequestCache(profiles []string) (int, error) {
 	uniq := map[string]bool{}
 	for _, profile := range profiles {
