@@ -1,28 +1,30 @@
 base_task:
   variables:
     backlog_bin: '{{arg1}}'
-    command: 'wikis'
-    refresh_all: ''
-  source: '{{backlog_bin}} {{command}} {{refresh_all}} 2>/dev/null | {{yml_dir}}/../one_line_wiki.py'
+    source_command: '{{backlog_bin}} wiki-list 2>/dev/null'
+  source: '{{source_command}}'
   delimiter: ':'
   binds:
+    alt-a:
+      - 'reload[{{source_command}} --profile-all]'
+    alt-c:
+      - 'execute-silent[for l in {+3..}; do env - echo "$l"; done | sed -e "s/ \+\\\\n.*$//" | pbcopy]'
+    alt-u:
+      - 'execute-silent[{{backlog_bin}} wiki-urls {+1,2} | tr " " "\n" | pbcopy]'
     alt-o:
       - 'execute-silent[open $({{backlog_bin}} wiki-urls {+1,2})]'
     alt-r:
-      - 'execute[{{backlog_bin}} delete-wiki-content-cache {1,2}]'
-      - 'refresh-preview'
+      - 'execute-silent[{{backlog_bin}} delete-wiki-cache {+1}]'
+      - 'reload[{{source_command}}]'
   preview:
-    command: '{{backlog_bin}} wiki-content {1,2} | jq -r ".content | .content" | ccat --bg=dark --color=always'
-    window: 'up'
+    command: '{{backlog_bin}} wiki-content {1,2} | ccat --color=always --bg=black'
+    window: 'up:wrap'
   options:
     - with-nth=1,3..
+    - ansi
     - reverse
     - multi
-    - no-sort
-task_switch:
-  f5:
-    variables:
-      refresh_all: '--refresh-all'
-  alt-a:
-    variables:
-      command: 'wikis-across-projects'
+    - no-hscroll
+  post_operations:
+    enter:
+      - pipe: fzfyml4 nth-tool -d ":" "3.." | sed 's/ \+\\n.*$//'

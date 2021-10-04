@@ -136,3 +136,26 @@ func getAllPullrequestsSDK(profile BacklogProfile) ([]map[string]interface{}, er
 	}
 	return allPullrequests, nil
 }
+
+func getAllWikisSDK(profile BacklogProfile) (interface{}, error) {
+	projectId, _ := strconv.Atoi(profile.projectId)
+	client := backlog.New(profile.apiKey, "https://"+profile.baseUrl)
+	opts := &backlog.GetWikisOptions{
+		ProjectIDOrKey: projectId,
+	}
+	wikis, err := client.GetWikis(opts)
+	if err != nil {
+		return nil, err
+	}
+	return wikis, nil
+}
+
+func getWikiContentSDK(profile BacklogProfile, wikiId string) (interface{}, error) {
+	client := backlog.New(profile.apiKey, "https://"+profile.baseUrl)
+	id, _ := strconv.Atoi(wikiId)
+	content, err := client.GetWiki(id)
+	if err != nil {
+		return nil, err
+	}
+	return content, nil
+}

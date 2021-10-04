@@ -49,6 +49,15 @@ func Run() int {
 	cmdPullrequestDescription := app.Command("pullrequest-description", "pullrequest-description")
 	cmdPullrequestDescriptionPullrequest := cmdPullrequestDescription.Arg("profile-repository-pullrequest", "profile-repository-pullrequest").String()
 
+	cmdWikiList := app.Command("wiki-list", "wiki-list")
+	cmdWikiListWithDescription := cmdWikiList.Flag("desc", "description").Bool()
+
+	cmdWikiUrls := app.Command("wiki-urls", "wiki-urls")
+	cmdWikiUrlArgs := cmdWikiUrls.Arg("profile-wikis", "profile-wikis").Strings()
+
+	cmdWikiContent := app.Command("wiki-content", "wiki-content")
+	cmdWikiContentWiki := cmdWikiContent.Arg("profile-wiki", "profile-wiki").String()
+
 	switch kingpin.MustParse(app.Parse(os.Args[1:])) {
 	case cmdIssueList.FullCommand():
 		exit, err := printIssueList(*cmdIssueListWithDescription)
@@ -112,6 +121,24 @@ func Run() int {
 		return exit
 	case cmdPullrequestDescription.FullCommand():
 		exit, err := printPullrequestDescription(*cmdPullrequestDescriptionPullrequest)
+		if err != nil {
+			fmt.Println(err)
+		}
+		return exit
+	case cmdWikiList.FullCommand():
+		exit, err := printWikiList(*cmdWikiListWithDescription)
+		if err != nil {
+			fmt.Println(err)
+		}
+		return exit
+	case cmdWikiUrls.FullCommand():
+		exit, err := printWikiUrls(*cmdWikiUrlArgs)
+		if err != nil {
+			fmt.Println(err)
+		}
+		return exit
+	case cmdWikiContent.FullCommand():
+		exit, err := printWikiContent(*cmdWikiContentWiki)
 		if err != nil {
 			fmt.Println(err)
 		}
