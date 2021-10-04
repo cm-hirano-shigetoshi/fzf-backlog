@@ -40,7 +40,7 @@ base_task:
       - 'reload[{{source_command}}]'
   preview:
     command: '{{backlog_bin}} issue-description {1,2} | ccat --color=always --bg=black'
-    window: 'down:wrap'
+    window: 'up:wrap'
   options:
     - with-nth=2..
     - ansi
