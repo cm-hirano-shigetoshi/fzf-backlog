@@ -39,7 +39,7 @@ base_task:
       - 'execute-silent[{{backlog_bin}} delete-issue-cache {+1}]'
       - 'reload[{{source_command}}]'
   preview:
-    command: '{{backlog_bin}} issue-description {1,2} | ccat --color=always --bg=black'
+    command: '{{backlog_bin}} issue-description {1,2} | cat <(echo {-1}) <(echo "") -'
     window: 'up:wrap'
   options:
     - with-nth=2..
