@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-func printPullrequestList(withDesc bool) (int, error) {
+func printPullrequestList(withDesc bool, output string) (int, error) {
 	for _, profile := range strings.Split(getProfiles(), ",") {
 		backlogProfile, err := getBacklogProfile(profile, *appProfileConfig)
 		if err != nil {
@@ -20,11 +20,15 @@ func printPullrequestList(withDesc bool) (int, error) {
 		if err != nil {
 			return 1, err
 		}
-		for _, pullrequest := range pullrequests {
-			oneLine := toOneLinePullrequest(profile, pullrequest.(map[string]interface{}), withDesc)
-			if len(oneLine) > 0 {
-				fmt.Println(oneLine)
+		if output == "oneline" {
+			for _, pullrequest := range pullrequests {
+				oneLine := toOneLinePullrequest(profile, pullrequest.(map[string]interface{}), withDesc)
+				if len(oneLine) > 0 {
+					fmt.Println(oneLine)
+				}
 			}
+		} else if output == "json" {
+			_ = json.NewEncoder(os.Stdout).Encode(pullrequests)
 		}
 	}
 	return 0, nil

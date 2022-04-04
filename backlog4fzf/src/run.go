@@ -12,6 +12,7 @@ var (
 	appProfileAll    = app.Flag("profile-all", "profile-all").Bool()
 	appProfileConfig = app.Flag("profile-config", "profile-config").Default(os.Getenv("HOME") + "/.backlog/profiles").String()
 	appCacheDir      = app.Flag("cache-dir", "cache-dir").Default(os.Getenv("HOME") + "/.backlog/cache").String()
+	appOutput        = app.Flag("output", "output").Default("oneline").String()
 )
 
 func Run() int {
@@ -60,7 +61,7 @@ func Run() int {
 
 	switch kingpin.MustParse(app.Parse(os.Args[1:])) {
 	case cmdIssueList.FullCommand():
-		exit, err := printIssueList(*cmdIssueListWithDescription)
+		exit, err := printIssueList(*cmdIssueListWithDescription, *appOutput)
 		if err != nil {
 			fmt.Println(err)
 		}
@@ -102,7 +103,7 @@ func Run() int {
 		}
 		return exit
 	case cmdPullrequestList.FullCommand():
-		exit, err := printPullrequestList(*cmdPullrequestListWithDescription)
+		exit, err := printPullrequestList(*cmdPullrequestListWithDescription, *appOutput)
 		if err != nil {
 			fmt.Println(err)
 		}
@@ -126,7 +127,7 @@ func Run() int {
 		}
 		return exit
 	case cmdWikiList.FullCommand():
-		exit, err := printWikiList(*cmdWikiListWithDescription)
+		exit, err := printWikiList(*cmdWikiListWithDescription, *appOutput)
 		if err != nil {
 			fmt.Println(err)
 		}

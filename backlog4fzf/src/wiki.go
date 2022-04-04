@@ -9,7 +9,7 @@ import (
 	"strings"
 )
 
-func printWikiList(withDesc bool) (int, error) {
+func printWikiList(withDesc bool, output string) (int, error) {
 	for _, profile := range strings.Split(getProfiles(), ",") {
 		backlogProfile, err := getBacklogProfile(profile, *appProfileConfig)
 		if err != nil {
@@ -20,8 +20,12 @@ func printWikiList(withDesc bool) (int, error) {
 		if err != nil {
 			return 1, err
 		}
-		for _, wiki := range wikis {
-			fmt.Println(toOneLineWiki(profile, wiki.(map[string]interface{}), withDesc))
+		if output == "oneline" {
+			for _, wiki := range wikis {
+				fmt.Println(toOneLineWiki(profile, wiki.(map[string]interface{}), withDesc))
+			}
+		} else if output == "json" {
+			_ = json.NewEncoder(os.Stdout).Encode(wikis)
 		}
 	}
 	return 0, nil
